@@ -87,6 +87,7 @@ class BTRtoday_ArtistCleanup{
 	}
 	
 	private function new_method(){
+		set_time_limit(0);
 		global $wpdb;
 		$sql = "SELECT t.*, count(tr.object_id) as post_count
 					FROM wp_term_relationships tr
@@ -96,11 +97,13 @@ class BTRtoday_ArtistCleanup{
 						ON t.term_id = tt.term_id
 					WHERE tt.taxonomy='artist'
 						GROUP BY t.term_id
-						ORDER BY post_count DESC;";
+						ORDER BY post_count DESC LIMIT 100;";
 		$artists = $wpdb->get_results($sql);
 		
 		foreach($artists as $artist){
-			echo "checking {$artist->name} <br>";
+		?>
+			<hr>checking<?=$artist->name;?><br>
+		<?php 
 			$this->find_and_merge($artist);
 		}
 	}
@@ -109,10 +112,17 @@ class BTRtoday_ArtistCleanup{
 		global $wpdb;
 		// first go by slug
 		$artists = $this->artists_by_pattern('%'.$artist->slug.'%', 'slug', " AND t.term_id NOT IN('".$artist->term_id."')");
+		?>
+		<ul>
+		<?php
 		foreach($artists as $artist){
-			echo $artist->name."<br>";
+		?>
+			<li><?=$artist->name;?></li>;
+		<?php
 		}
-		
+		?>
+		</ul>
+		<?php
 		return;
 		
 	}
